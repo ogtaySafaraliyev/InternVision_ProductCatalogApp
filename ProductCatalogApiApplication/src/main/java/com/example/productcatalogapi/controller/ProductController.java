@@ -66,25 +66,18 @@ public class ProductController {
             @RequestParam(required = false) Boolean available,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "price,asc") String[] sort // or a single string "price,asc"
+            @RequestParam(defaultValue = "price,asc") String sort
     ) {
-        // parse sort array or string into Sort object
-        Sort sortObj;
-        // Example: sort = ["price,desc"] or sort = ["price,desc", "name,asc"]
-        sortObj = Sort.by(
-            Arrays.stream(sort)
-                  .map(s -> {
-                      String[] parts = s.split(",");
-                      return parts.length == 2 && parts[1].equalsIgnoreCase("desc")
-                         ? Sort.Order.desc(parts[0])
-                         : Sort.Order.asc(parts[0]);
-                  })
-                  .toList()
+        String[] parts = sort.split(",");
+        Sort sortObj = Sort.by(
+                parts.length == 2 && parts[1].equalsIgnoreCase("desc")
+                        ? Sort.Order.desc(parts[0])
+                        : Sort.Order.asc(parts[0])
         );
 
         Pageable pageable = PageRequest.of(page, size, sortObj);
-
         Page<ProductResponseDTO> result = productService.getFilteredProducts(category, available, pageable);
+
         return ResponseEntity.ok(result);
     }
 
